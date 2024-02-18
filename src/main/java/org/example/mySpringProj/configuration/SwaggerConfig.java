@@ -33,8 +33,8 @@ public class SwaggerConfig {
 
     private Info apiInfo() {
         return new Info()
-                .title("마리아루")
-                .description("마리아주 SwaggerTest")
+                .title("LocalSwagger")
+                .description("SpringBoot Test")
                 .version("1.0.0");
     }
 }

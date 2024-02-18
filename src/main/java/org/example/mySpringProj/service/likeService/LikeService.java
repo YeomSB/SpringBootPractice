@@ -1,4 +1,4 @@
-package org.example.mySpringProj.service.likeSercvice;
+package org.example.mySpringProj.service.likeService;
 
 import lombok.RequiredArgsConstructor;
 import org.example.mySpringProj.domain.boardDomain.Board;

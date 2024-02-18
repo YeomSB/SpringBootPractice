@@ -8,8 +8,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BoardResponseDTO {
-
+    private String categoryName;
+    private Long boardId;
     private String userNickname;
     private String title;
     private String contents;
+    private int likes;
+    private int viewCnt;
 }

@@ -2,6 +2,7 @@ package org.example.mySpringProj.domain.boardDomain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.mySpringProj.domain.commentDomain.Comment;
 import org.example.mySpringProj.domain.userDomain.User;
 
 import java.util.ArrayList;
@@ -31,6 +32,13 @@ public class Board {
 
     @OneToMany(mappedBy = "board")
     private List<Likes> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board")
+    private List<Comment> comments = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     public void updateViewCount() {
         this.viewCount += 1;
