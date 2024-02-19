@@ -30,12 +30,12 @@ public class BoardController {
         return new ResponseEntity<>("작성 완료", HttpStatus.OK);
     }
 
-    @GetMapping("/view/boardId/{boardId}")
+    @GetMapping("/view/{boardId}")
     public ResponseEntity<BoardResponseDTO> selectBoard(@PathVariable Long boardId) {
         return ResponseEntity.ok(boardService.selectBoard(boardId));
     }
 
-    @PatchMapping("/modify/boardId/{boardId}")
+    @PatchMapping("/modify/{boardId}")
     public ResponseEntity<ResponseDTO> updateBoard(@PathVariable Long boardId, @RequestBody BoardUpdateRequestDTO boardUpdateRequestDTO, Authentication authentication) {
         String userName = authentication.getName();
         boardService.updateBoard(boardId,boardUpdateRequestDTO,userName);
@@ -46,7 +46,7 @@ public class BoardController {
                 .build());
     }
 
-    @DeleteMapping("/delete/boardId/{boardId}")
+    @DeleteMapping("/delete/{boardId}")
     public ResponseEntity<ResponseDTO> deleteBoard(@PathVariable Long boardId) {
         boardService.deleteBoard(boardId);
         return ResponseEntity.ok(ResponseDTO.builder()
@@ -56,12 +56,12 @@ public class BoardController {
                 .build());
     }
 
-    @GetMapping("/list/nickName/{userNickName}")
+    @GetMapping("/list/myBoard/{userNickName}")
     public ResponseEntity<List<BoardResponseDTO>> selectBoardsByUserId(@PathVariable String userNickName){
         return ResponseEntity.ok(boardService.selectBoardsByNickName(userNickName));
     }
 
-    @GetMapping("/list/categoryId/{categoryId}")
+    @GetMapping("/list/categoryBoard/{categoryId}")
     public ResponseEntity<List<BoardResponseDTO>> getBoardsList(@PathVariable Long categoryId){
         return ResponseEntity.ok(boardService.getBoardsList(categoryId));
     }

@@ -16,4 +16,12 @@ public class ResponseDTO {
     private String successContent;
     private Object Data;
 
+    public static ResponseDTO success(HttpStatus status,String contents, Object data){
+        return ResponseDTO.builder()
+                .successStatus(status)
+                .successContent(contents)
+                .Data(data)
+                .build();
+    }
+
 }

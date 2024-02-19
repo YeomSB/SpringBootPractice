@@ -69,11 +69,10 @@ public class CommentService {
         Comment comment = checkComment(comment_id);
 
         if(!reCommentRepository.findALLByComment(comment).isEmpty()) {
-            comment.setContents("삭제된 댓글입니다.");
-            comment.setRegdate(new Date());
+            comment.setContents("해당 댓글은 게시자에 의해 삭제되었습니다.");
+            comment.setRegdate(null);
             comment.setUser(null);
         }
-
         else {
         commentRepository.delete(commentRepository.findByIdAndBoard(comment_id,board)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"해당 댓글을 찾을 수 없습니다",comment_id)));

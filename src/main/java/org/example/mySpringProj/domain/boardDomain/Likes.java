@@ -11,7 +11,8 @@ import org.example.mySpringProj.domain.userDomain.User;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Likes {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     @Column(name = "like_id")
     private Long id;
 

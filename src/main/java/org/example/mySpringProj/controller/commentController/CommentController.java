@@ -27,26 +27,22 @@ public class CommentController {
         return new ResponseEntity<>("작성 완료", HttpStatus.OK);
     }
 
-    @GetMapping("/view/boardId/{board_id}")
+    @GetMapping("/{board_id}")
     public ResponseEntity<List<CommentResponseDTO>> selectBoard(@PathVariable Long board_id) {
         return ResponseEntity.ok(commentService.selectBoard(board_id));
     }
 
-    @GetMapping("/view/userId/{user_id}")
+    @GetMapping("/my-comment/{user_id}")
     public ResponseEntity<List<CommentResponseDTO>> selectUser(@PathVariable Long user_id) {
         return ResponseEntity.ok(commentService.selectUser(user_id));
     }
 
-    @DeleteMapping("/delete/boardId/{board_id}/commentID/{comment_id}")
-    public ResponseEntity<ResponseDTO> deleteComment(@PathVariable Long board_id,@PathVariable Long comment_id) {
+    @DeleteMapping("/delete/{board_id}/{comment_id}")
+    public ResponseDTO deleteComment(@PathVariable Long board_id,@PathVariable Long comment_id) {
         commentService.deleteComment(board_id,comment_id);
 
-        return ResponseEntity.ok().body(ResponseDTO.builder()
-                .successStatus(HttpStatus.OK)
-                .successContent("댓글 삭제 완료")
-                .Data(null)
-                .build()
-        );
+        return ResponseDTO.success(HttpStatus.OK, "댓글 삭제 완료", null);
+
     }
 
 }

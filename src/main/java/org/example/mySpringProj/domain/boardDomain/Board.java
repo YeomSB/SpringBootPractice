@@ -2,6 +2,7 @@ package org.example.mySpringProj.domain.boardDomain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.mySpringProj.domain.categoryDomain.Category;
 import org.example.mySpringProj.domain.commentDomain.Comment;
 import org.example.mySpringProj.domain.userDomain.User;
 
@@ -16,7 +17,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Board {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     @Column(name = "board_id")
     private Long id;
 
@@ -30,9 +32,11 @@ public class Board {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Builder.Default
     @OneToMany(mappedBy = "board")
     private List<Likes> likes = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "board")
     private List<Comment> comments = new ArrayList<>();
 

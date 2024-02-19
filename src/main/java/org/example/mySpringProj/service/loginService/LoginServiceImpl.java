@@ -28,7 +28,7 @@ public class LoginServiceImpl implements LoginService {
     private Long RefreshTokenexpireTimeMs = 24 * 60 * 60 * 1000L;
 
     @Override
-    public TokenDto login(String userName, String password) { //로그인
+    public TokenDto login(String userName, String password) {
         //유저 없음
         User selectedUser = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, userName + "가 없습니다.",null));

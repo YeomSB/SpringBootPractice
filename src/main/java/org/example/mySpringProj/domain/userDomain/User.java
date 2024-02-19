@@ -1,5 +1,6 @@
 package org.example.mySpringProj.domain.userDomain;
 
+import org.example.mySpringProj.domain.commentDomain.Comment;
 import org.example.mySpringProj.dto.userDto.UserListResponse;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -9,7 +10,9 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Builder
 @Setter
@@ -61,7 +64,6 @@ public class User{
 
     @OneToOne(mappedBy = "user")
     private Terms terms;
-
 
     public UserListResponse toDto() {
         return new UserListResponse(userName, name, email, phoneNumber, nickName, role);

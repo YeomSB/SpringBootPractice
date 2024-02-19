@@ -35,13 +35,13 @@ public class UserController {
             throw new AppException(ErrorCode.BAD_REQUEST, "이용 약관의 필수 항목을 체크해주세요.",dto);
 
 
-        boolean isAuthVerified = mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum());
+        //boolean isAuthVerified = mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum());
 
-        if (!isAuthVerified)
-            throw new AppException(ErrorCode.BAD_REQUEST, "인증번호가 일치하지 않습니다.",dto);
+//        if (!isAuthVerified)
+//            throw new AppException(ErrorCode.BAD_REQUEST, "인증번호가 일치하지 않습니다.",dto);
 
         userService.join(dto);
-        mailService.DeleteAuthNum(dto.getAuthNum());
+        //mailService.DeleteAuthNum(dto.getAuthNum());
 
         return ResponseEntity.ok().body(ResponseDTO.builder()
                 .successStatus(HttpStatus.OK)

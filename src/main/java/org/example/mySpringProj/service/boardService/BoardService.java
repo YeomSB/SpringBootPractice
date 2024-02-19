@@ -1,11 +1,9 @@
 package org.example.mySpringProj.service.boardService;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.mySpringProj.domain.boardDomain.Board;
-import org.example.mySpringProj.domain.boardDomain.Category;
 import org.example.mySpringProj.domain.boardDomain.Likes;
 import org.example.mySpringProj.domain.commentDomain.Comment;
 import org.example.mySpringProj.domain.commentDomain.ReComment;
@@ -21,8 +19,6 @@ import org.example.mySpringProj.repository.categoryRepository.CategoryRepository
 import org.example.mySpringProj.repository.commentRepository.CommentRepository;
 import org.example.mySpringProj.repository.commentRepository.ReCommentRepository;
 import org.example.mySpringProj.repository.userRepository.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,14 +80,12 @@ public class BoardService {
 
     @Transactional
     public void deleteBoard(Long boardId) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 게시물을 찾을 수 없습니다.",boardId));
-
+        Board board = boardRepository.findFetchLikesById(boardId);
         List<Likes> likes = board.getLikes();
         likeRepository.deleteAll(likes);
 
-
-        List<Comment> comments = board.getComments();
+        Board board2 = boardRepository.findFetchCommentsById(boardId);
+        List<Comment> comments = board2.getComments();
         for (Comment comment : comments) {
             List<ReComment> reComments = comment.getReComments();
             reCommentRepository.deleteAll(reComments);

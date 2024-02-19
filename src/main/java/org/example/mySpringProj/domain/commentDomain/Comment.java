@@ -17,22 +17,24 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment {
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     @Column(name = "comment_id")
     private Long id;
 
-    private String contents;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private Board board;
 
+    private String contents;
+
+    @Builder.Default
     @OneToMany(mappedBy = "comment")
     private List<ReComment> reComments = new ArrayList<>();
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @CreationTimestamp
     private Date regdate; //등록일자

@@ -26,16 +26,10 @@ public class ReCommentController {
         return new ResponseEntity<>("작성 완료", HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete/commentId/{commentId}/recommentID/{recommentId}")
-    public ResponseEntity<ResponseDTO> delete(@PathVariable Long commentId, @PathVariable Long recommentId) {
+    @DeleteMapping("/delete/{commentId}/{recommentId}")
+    public ResponseDTO delete(@PathVariable Long commentId, @PathVariable Long recommentId) {
         reCommentService.deleteReComment(commentId,recommentId);
-
-        return ResponseEntity.ok().body(ResponseDTO.builder()
-                .successStatus(HttpStatus.OK)
-                .successContent("대댓글 삭제 완료")
-                .Data(null)
-                .build()
-        );
+        return ResponseDTO.success(HttpStatus.OK,"대댓글 삭제 완료",null);
     }
 
     @GetMapping("/list/{commentId}")
