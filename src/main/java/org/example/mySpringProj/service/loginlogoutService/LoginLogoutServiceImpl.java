@@ -1,7 +1,9 @@
-package org.example.mySpringProj.service.loginService;
+package org.example.mySpringProj.service.loginlogoutService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.example.mySpringProj.domain.userDomain.RefreshToken;
 import org.example.mySpringProj.domain.userDomain.User;
+import org.example.mySpringProj.dto.ResponseDTO;
 import org.example.mySpringProj.dto.userDto.TokenDto;
 import org.example.mySpringProj.exception.AppException;
 import org.example.mySpringProj.exception.ErrorCode;
@@ -10,18 +12,24 @@ import org.example.mySpringProj.repository.userRepository.UserRepository;
 import org.example.mySpringProj.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.mySpringProj.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LoginServiceImpl implements LoginService {
-
-    private final UserRepository userRepository;
+public class LoginLogoutServiceImpl implements LoginLogoutService {
     private final JwtRepository jwtRepository;
+    private final JwtTokenUtil jwtTokenUtil;
+    private final RedisUtil redisUtil;
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
+
     @Value("${jwt.token.secret}")
     private String key;
     private Long expireTimeMs = 60 * 60 * 1000L;
@@ -49,11 +57,10 @@ public class LoginServiceImpl implements LoginService {
             jwtRepository.save(existingToken);
         }
         else {
-            RefreshToken refreshTokenDB = RefreshToken.builder()
+            jwtRepository.save(RefreshToken.builder()
                     .userName(userName)
                     .refreshToken(refreshToken)
-                    .build();
-            jwtRepository.save(refreshTokenDB);
+                    .build());
         }
 
         return TokenDto.builder()
@@ -61,6 +68,24 @@ public class LoginServiceImpl implements LoginService {
                 .refreshToken(refreshToken)
                 .build();
 
+    }
+
+    @Transactional
+    public ResponseDTO logout(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+//        if (authorization == null)
+//            throw new AppException(ErrorCode.UNAUTHORIZED,"인증 정보가 유효하지 않습니다.",null);
+        String token = authorization.split(" ")[1];
+        String userName = jwtTokenUtil.getUserName(token);
+//        if (!jwtTokenUtil.validateToken(token))
+//            throw new AppException(ErrorCode.UNAUTHORIZED,"접근이 금지된 토큰입니다.",null);
+        jwtRepository.deleteByUserName(userName);
+
+        redisUtil.setBlackList(token, "access_token", jwtTokenUtil.getExpiration(token));
+
+        SecurityContextHolder.clearContext();
+
+        return ResponseDTO.success(HttpStatus.OK,userName + "님이 로그아웃 되었습니다.",null);
     }
 
 }

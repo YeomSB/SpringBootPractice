@@ -23,41 +23,31 @@ public class BoardController {
     private final BoardService boardService;
 
     @PostMapping("/post")
-    public ResponseEntity<String> write(@RequestBody BoardRequestDTO boardRequestDTO) {
-
-        boardService.save(boardRequestDTO);
-
-        return new ResponseEntity<>("작성 완료", HttpStatus.OK);
+    public ResponseDTO write(@RequestBody BoardRequestDTO boardRequestDTO,Authentication authentication) {
+        boardService.save(boardRequestDTO,authentication.getName());
+        return ResponseDTO.success(HttpStatus.CREATED,"게시물 작성 완료",boardRequestDTO);
     }
 
-    @GetMapping("/view/{boardId}")
-    public ResponseEntity<BoardResponseDTO> selectBoard(@PathVariable Long boardId) {
+    @GetMapping("/view/{categoryID}/{boardId}")
+    public ResponseEntity<BoardResponseDTO> selectBoard(@PathVariable Long categoryID, @PathVariable Long boardId) {
         return ResponseEntity.ok(boardService.selectBoard(boardId));
     }
 
     @PatchMapping("/modify/{boardId}")
-    public ResponseEntity<ResponseDTO> updateBoard(@PathVariable Long boardId, @RequestBody BoardUpdateRequestDTO boardUpdateRequestDTO, Authentication authentication) {
+    public ResponseDTO updateBoard( @PathVariable Long boardId, @RequestBody BoardUpdateRequestDTO boardUpdateRequestDTO, Authentication authentication) {
         String userName = authentication.getName();
         boardService.updateBoard(boardId,boardUpdateRequestDTO,userName);
-        return ResponseEntity.ok(ResponseDTO.builder()
-                .successStatus(HttpStatus.OK)
-                .successContent("해당 게시물이 수정되었습니다.")
-                .Data(null)
-                .build());
+        return ResponseDTO.success(HttpStatus.OK,"게시물 수정 완료",null);
     }
 
-    @DeleteMapping("/delete/{boardId}")
-    public ResponseEntity<ResponseDTO> deleteBoard(@PathVariable Long boardId) {
-        boardService.deleteBoard(boardId);
-        return ResponseEntity.ok(ResponseDTO.builder()
-                .successStatus(HttpStatus.OK)
-                .successContent("해당 게시물이 삭제되었습니다.")
-                .Data(null)
-                .build());
+    @DeleteMapping("/delete/{categoryID}/{boardId}")
+    public ResponseDTO deleteBoard(@PathVariable Long categoryID, @PathVariable Long boardId,Authentication authentication) {
+        boardService.deleteBoard(categoryID,boardId,authentication.getName());
+        return ResponseDTO.success(HttpStatus.OK,"게시물 삭제 완료",null);
     }
 
     @GetMapping("/list/myBoard/{userNickName}")
-    public ResponseEntity<List<BoardResponseDTO>> selectBoardsByUserId(@PathVariable String userNickName){
+    public ResponseEntity<List<BoardResponseDTO>> selectBoardsByNickName(@PathVariable String userNickName){
         return ResponseEntity.ok(boardService.selectBoardsByNickName(userNickName));
     }
 

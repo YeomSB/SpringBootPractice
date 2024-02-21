@@ -32,9 +32,7 @@ public class Comment {
 
     private String contents;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "comment")
-    private List<ReComment> reComments = new ArrayList<>();
+    private Long parentId;
 
     @CreationTimestamp
     private Date regdate; //등록일자

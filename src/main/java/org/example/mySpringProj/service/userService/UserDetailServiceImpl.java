@@ -22,6 +22,5 @@ public class UserDetailServiceImpl implements UserDetailsService {
     return userRepository.findByUserName(username)
             .map(CustomUserDetails::new)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-
     }
 }

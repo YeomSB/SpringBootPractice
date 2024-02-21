@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/community/like")
 public class LikeController {
 
-    private final LikeService llikeService;
+    private final LikeService likeService;
 
     @PostMapping("/{boardId}/{userId}")
     public ResponseEntity<String> like(@PathVariable Long boardId, @PathVariable Long userId) {
-        return new ResponseEntity<>(llikeService.like(boardId, userId), HttpStatus.OK);
+        return new ResponseEntity<>(likeService.like(boardId, userId), HttpStatus.OK);
     }
 }

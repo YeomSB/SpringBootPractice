@@ -1,8 +1,6 @@
 package org.example.mySpringProj.service.commentService;
 
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.example.mySpringProj.domain.boardDomain.Board;
 import org.example.mySpringProj.domain.commentDomain.Comment;
@@ -13,12 +11,11 @@ import org.example.mySpringProj.exception.AppException;
 import org.example.mySpringProj.exception.ErrorCode;
 import org.example.mySpringProj.repository.boardRepository.BoardRepository;
 import org.example.mySpringProj.repository.commentRepository.CommentRepository;
-import org.example.mySpringProj.repository.commentRepository.ReCommentRepository;
 import org.example.mySpringProj.repository.userRepository.UserRepository;
+import org.example.mySpringProj.service.PermissionFunc;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,48 +27,41 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
-    private final ReCommentRepository reCommentRepository;
-
 
     @Transactional
     public void save(CommentRequestDTO commentRequestDTO,String userName){
-        Board board = checkBoard(commentRequestDTO.getId());
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"",null));
-
         commentRepository.save(Comment.builder()
-                .board(board)
+                .board(checkBoard(commentRequestDTO.getBoardId()))
                 .contents(commentRequestDTO.getContents())
-                .user(user)
+                .user(userRepository.findByUserName(userName)
+                        .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"",null)))
+                .parentId(commentRequestDTO.getParentId())
                 .build());
-
     }
 
     public List<CommentResponseDTO> selectBoard(Long board_id) {
         Board board = checkBoard(board_id);
-
-        List<Comment> comments = commentRepository.getAllByBoard(board);
-        return addDtoList(comments);
+        return CommentResponseDTO.addDtoList(commentRepository.getAllByBoard(board));
     }
 
     public List<CommentResponseDTO> selectUser(Long user_id) {
         User user = userRepository.findById(user_id)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 유저가 없습니다.",user_id));
-
-        List<Comment> comments = commentRepository.getAllByUser(user);
-        return addDtoList(comments);
-
+        return CommentResponseDTO.addDtoList(commentRepository.getAllByUser(user));
     }
 
     @Transactional
-    public void deleteComment(Long board_id, Long comment_id) {
+    public void deleteComment(Long board_id, Long comment_id,String reqName) {
+
+        PermissionFunc.hasPermission(commentRepository.findById(comment_id).orElseThrow().getUser().getUserName(),reqName);
+
         Board board = checkBoard(board_id);
         Comment comment = checkComment(comment_id);
 
-        if(!reCommentRepository.findALLByComment(comment).isEmpty()) {
-            comment.setContents("해당 댓글은 게시자에 의해 삭제되었습니다.");
-            comment.setRegdate(null);
+        if(!commentRepository.findAllByParentId(comment_id).isEmpty()){
+            comment.setContents("게시자에 의하여 댓글이 삭제되었습니다");
             comment.setUser(null);
+            comment.setRegdate(new Date());
         }
         else {
         commentRepository.delete(commentRepository.findByIdAndBoard(comment_id,board)
@@ -79,24 +69,16 @@ public class CommentService {
         }
     }
 
-    private List<CommentResponseDTO> addDtoList(List<Comment> comments){
-        List<CommentResponseDTO> commentResponseDTOList= new ArrayList<>();
-        for(Comment comment : comments){
-            commentResponseDTOList.add(
-                    CommentResponseDTO.builder()
-                            .userNickName(comment.getUser().getNickName())
-                            .contents(comment.getContents())
-                            .regDate(comment.getRegdate())
-                            .build()
-            );
-        }
-        return commentResponseDTOList;
+    @Transactional
+    public List<CommentResponseDTO> selectParentId(Long parentId){
+        return CommentResponseDTO.addDtoList(commentRepository.findAllByParentId(parentId));
     }
 
     private Board checkBoard(Long board_id){
         return boardRepository.findById(board_id)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 게시물이 없습니다.",board_id));
     }
+
     private Comment checkComment(Long comment_id){
         return commentRepository.findById(comment_id)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 댓글이 없습니다.",comment_id));

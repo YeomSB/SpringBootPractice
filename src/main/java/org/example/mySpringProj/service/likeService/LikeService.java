@@ -18,25 +18,27 @@ import java.util.Optional;
 public class LikeService {
 
     private final BoardRepository boardRepository;
-    private final LikeRepository llikeRepository;
+    private final LikeRepository likeRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public String like(Long boardId, Long userId) {
         Board board = boardRepository.findById(boardId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
-        Optional<Likes> findLike = llikeRepository.findByBoardIdAndUserId(board, user);
+        Optional<Likes> findLike = likeRepository.findByBoardIdAndUserId(board, user);
 
         if (findLike.isEmpty()) {
             Likes likes = Likes.builder()
                     .board(board)
                     .user(user)
                     .build();
-            llikeRepository.save(likes);
+            likeRepository.save(likes);
             return "좋아요";
         } else {
-            llikeRepository.delete(findLike.get());
+            likeRepository.delete(findLike.get());
             return "좋아요 취소";
         }
+
+
     }
 }

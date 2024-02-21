@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.mySpringProj.domain.boardDomain.Board;
 import org.example.mySpringProj.domain.boardDomain.Likes;
-import org.example.mySpringProj.domain.commentDomain.Comment;
-import org.example.mySpringProj.domain.commentDomain.ReComment;
 import org.example.mySpringProj.domain.userDomain.User;
 import org.example.mySpringProj.dto.boardDto.BoardRequestDTO;
 import org.example.mySpringProj.dto.boardDto.BoardResponseDTO;
@@ -17,8 +15,8 @@ import org.example.mySpringProj.repository.boardRepository.BoardRepository;
 import org.example.mySpringProj.repository.boardRepository.LikeRepository;
 import org.example.mySpringProj.repository.categoryRepository.CategoryRepository;
 import org.example.mySpringProj.repository.commentRepository.CommentRepository;
-import org.example.mySpringProj.repository.commentRepository.ReCommentRepository;
 import org.example.mySpringProj.repository.userRepository.UserRepository;
+import org.example.mySpringProj.service.PermissionFunc;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +33,12 @@ public class BoardService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final CategoryRepository categoryRepository;
-    private final ReCommentRepository reCommentRepository;
     private final LikeRepository likeRepository;
 
     @Transactional
-    public void save(BoardRequestDTO boardRequestDTO) {
-        User user = userRepository.findById(boardRequestDTO.getUserId()).orElseThrow();
+    public void save(BoardRequestDTO boardRequestDTO,String reqName) {
+        User user = userRepository.findByUserName(reqName)
+                .orElseThrow(() ->  new AppException(ErrorCode.NOT_FOUND, "해당 유저를 찾을 수 없습니다.",reqName));
         Board board = getBoard(boardRequestDTO, user);
         boardRepository.save(board);
     }
@@ -67,32 +65,28 @@ public class BoardService {
     public void updateBoard(Long boardId, BoardUpdateRequestDTO boardUpdateRequestDTO, String userName) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 게시물을 찾을 수 없습니다.",boardId));
-
-        if(!board.getUser().getUserName().equals(userName))
-            throw new AppException(ErrorCode.BAD_REQUEST,"해당 게시글의 수정 권한이 없습니다.",userName);
-
-        if(boardUpdateRequestDTO.getContents() == null)
-            throw new AppException(ErrorCode.BAD_REQUEST,"해당 게시글의 수정 사항이 없습니다.",null);
-
+        PermissionFunc.hasPermission(board.getUser().getUserName(),userName);
         board.setContents(boardUpdateRequestDTO.getContents());
 
     }
 
     @Transactional
-    public void deleteBoard(Long boardId) {
-        Board board = boardRepository.findFetchLikesById(boardId);
-        List<Likes> likes = board.getLikes();
-        likeRepository.deleteAll(likes);
+    public void deleteBoard(Long categoryId, Long boardId,String reqName) {
 
-        Board board2 = boardRepository.findFetchCommentsById(boardId);
-        List<Comment> comments = board2.getComments();
-        for (Comment comment : comments) {
-            List<ReComment> reComments = comment.getReComments();
-            reCommentRepository.deleteAll(reComments);
+        PermissionFunc.hasPermission(categoryRepository.findById(categoryId).orElseThrow().getUser().getUserName(),reqName);
+        PermissionFunc.hasPermission(boardRepository.findById(boardId).orElseThrow().getUser().getUserName(),reqName);
+
+        Board boardByLikes = boardRepository.findFetchLikesById(boardId);
+        if(boardByLikes != null) {
+            List<Likes> likes = boardByLikes.getLikes();
+            likeRepository.deleteAll(likes);
         }
 
-        commentRepository.deleteAllByBoard(board);
-        boardRepository.delete(board);
+        Board boardByComments = boardRepository.findFetchCommentsById(boardId);
+        if(boardByComments!=null)
+            commentRepository.deleteAllByBoard(boardByComments);
+
+        boardRepository.delete(boardRepository.findById(boardId).orElseThrow());
     }
 
     public List<BoardResponseDTO> selectBoardsByNickName(String userNickName) {

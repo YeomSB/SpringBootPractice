@@ -23,28 +23,16 @@ public class MailController {
     private final MailService mailService;
 
     @PostMapping("/Send")
-    public ResponseEntity<ResponseDTO> mailSend(@RequestBody @Valid EmailRequest dto) {
-
+    public ResponseDTO mailSend(@RequestBody @Valid EmailRequest dto) {
         mailService.joinEmail(dto.getEmail());
-
-        return ResponseEntity.ok(ResponseDTO.builder()
-                .successStatus(HttpStatus.OK)
-                .successContent(dto.getEmail()+"\n해당 메일에 인증번호가 정상 전송되었습니다.")
-                .Data(dto)
-                .build()
-        );
+        return ResponseDTO.success(HttpStatus.OK,dto.getEmail()+"\n해당 메일에 인증번호가 정상 전송되었습니다.",dto);
     }
 
     @PostMapping("/AuthCheck")
-    public ResponseEntity<ResponseDTO> AuthCheck(@RequestBody @Valid EmailCheckDTO dto){
+    public ResponseDTO AuthCheck(@RequestBody @Valid EmailCheckDTO dto){
         Boolean Checked=mailService.CheckAuthNum(dto.getEmail(),dto.getAuthNum());
         if(Checked){
-            return ResponseEntity.ok(ResponseDTO.builder()
-                    .successStatus(HttpStatus.OK)
-                    .successContent("인증이 완료되었습니다")
-                    .Data(dto)
-                    .build()
-            );
+            return ResponseDTO.success(HttpStatus.OK,"인증이 완료되었습니다",dto);
         }
         else{
             throw new AppException(ErrorCode.BAD_REQUEST,"인증 번호가 맞지 않습니다.",dto);

@@ -48,8 +48,10 @@ public class MailServiceImpl implements MailService {
                         "인증번호를 제대로 입력해주세요";
         mailSend(setFrom,SenderName, toMail, title, content);
         redisUtil.setDataExpire(Integer.toString(authNumber),email,1000*60*5);
-        return Integer.toString(authNumber);
+        //return Integer.toString(authNumber);
+        return email;
     }
+
     @Override
     public void mailSend(String setFrom,String SenderName, String toMail, String title, String content) {
         MimeMessage message = mailSender.createMimeMessage();//JavaMailSender 객체를 사용하여 MimeMessage 객체를 생성
@@ -65,6 +67,7 @@ public class MailServiceImpl implements MailService {
             e.printStackTrace();//e.printStackTrace()는 예외를 기본 오류 스트림에 출력하는 메서드
         }
     }
+
     @Override
     public boolean CheckAuthNum(String email,String authNum){
         if(redisUtil.getData(authNum)==null){
@@ -77,6 +80,7 @@ public class MailServiceImpl implements MailService {
             return false;
         }
     }
+
     @Override
     public void DeleteAuthNum(String authNum){
         redisUtil.deleteData(authNum);

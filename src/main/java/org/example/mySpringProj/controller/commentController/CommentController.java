@@ -21,9 +21,8 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/post")
-    public ResponseEntity<String> post(@RequestBody CommentRequestDTO commentRequestDTO, Authentication authentication) {
-        String userName = authentication.getName();
-        commentService.save(commentRequestDTO,userName);
+    public ResponseEntity<String> post(@RequestBody CommentRequestDTO commentRequestDTO,Authentication authentication) {
+        commentService.save(commentRequestDTO,authentication.getName());
         return new ResponseEntity<>("작성 완료", HttpStatus.OK);
     }
 
@@ -37,12 +36,11 @@ public class CommentController {
         return ResponseEntity.ok(commentService.selectUser(user_id));
     }
 
+
     @DeleteMapping("/delete/{board_id}/{comment_id}")
-    public ResponseDTO deleteComment(@PathVariable Long board_id,@PathVariable Long comment_id) {
-        commentService.deleteComment(board_id,comment_id);
-
+    public ResponseDTO deleteComment(@PathVariable Long board_id,@PathVariable Long comment_id,Authentication authentication) {
+        commentService.deleteComment(board_id,comment_id,authentication.getName());
         return ResponseDTO.success(HttpStatus.OK, "댓글 삭제 완료", null);
-
     }
 
 }

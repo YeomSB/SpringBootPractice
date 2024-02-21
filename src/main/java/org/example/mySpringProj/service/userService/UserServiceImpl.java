@@ -31,25 +31,25 @@ public class UserServiceImpl implements UserService {
     private final TermsRepository termsRepository;
     private final BCryptPasswordEncoder encoder;
 
-    private final EntityManager em;
-
     @Override
     public void join(UserJoinRequest dto){
-        userRepository.findByUserName(dto.getUserName())
-                .ifPresent(user -> {
-                    throw new AppException(ErrorCode.BAD_REQUEST, "USERNAME : " + dto.getUserName() + "는 이미 있습니다",dto);
-                });
-        userRepository.findByEmail(dto.getEmail())
-                .ifPresent(user -> {
-                    throw new AppException(ErrorCode.BAD_REQUEST,dto.getEmail() + "은 이미 사용중인 이메일입니다.",dto);
-                });
-        userRepository.findByNickName(dto.getNickName())
-                .ifPresent(user -> {
-                    throw new AppException(ErrorCode.BAD_REQUEST, dto.getNickName() + "은 이미 사용중인 닉네임입니다.",dto);
-                });
+//        userRepository.findByUserName(dto.getUserName())
+//                .ifPresent(user -> {
+//                    throw new AppException(ErrorCode.BAD_REQUEST, "USERNAME : " + dto.getUserName() + "는 이미 있습니다",dto);
+//                });
+//        userRepository.findByEmail(dto.getEmail())
+//                .ifPresent(user -> {
+//                    throw new AppException(ErrorCode.BAD_REQUEST,dto.getEmail() + "은 이미 사용중인 이메일입니다.",dto);
+//                });
+//        userRepository.findByNickName(dto.getNickName())
+//                .ifPresent(user -> {
+//                    throw new AppException(ErrorCode.BAD_REQUEST, dto.getNickName() + "은 이미 사용중인 닉네임입니다.",dto);
+//                });
 
 
-        User user = User.builder()
+        duplicateCheck(dto.getUserName(),dto.getEmail(),dto.getNickName(),dto.getPhoneNumber());
+
+        User savedUser = userRepository.save(User.builder()
                 .userName(dto.getUserName())
                 .password(encoder.encode(dto.getPassword()))
                 .email(dto.getEmail())
@@ -57,39 +57,33 @@ public class UserServiceImpl implements UserService {
                 .nickName(dto.getNickName())
                 .name(dto.getName())
                 .role(dto.getRole())
-                .build();
-        User savedUser = userRepository.save(user);
+                .build());
 
-        Terms term = Terms.builder()
+        termsRepository.save(Terms.builder()
                 .agreedToTerms1(dto.isAgreedToTerms1())
                 .agreedToTerms2(dto.isAgreedToTerms2())
                 .agreedToOptionalTerms(dto.isAgreedToOptionalTerms())
                 .user(savedUser)
-                .build();
-        termsRepository.save(term);
+                .build());
 
     }
 
     @Override
     public void modifyUser(String userName, UserModifyRequest dto){
-        Optional<User> selectedUser = userRepository.findByUserName(userName);
-        User user = selectedUser.orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다.",dto));
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다.",dto));
+
+        duplicateCheck(userName, dto.getEmail(), dto.getNickName(), dto.getPhoneNumber());
 
         if(dto.getNewPassword() != null) {
-            if(encoder.matches(dto.getNewPassword(),user.getPassword())) {
+            if(encoder.matches(dto.getNewPassword(),user.getPassword()))
                 throw new AppException(ErrorCode.CONFLICT, "이미 같은 비밀번호로 설정되어 있습니다.",dto);
-            }
-
             user.setPassword(encoder.encode(dto.getNewPassword()));
         }
 
         if (dto.getNickName() != null) {
-            if (user.getNickName().equals(dto.getNickName())) {
+            if (user.getNickName().equals(dto.getNickName()))
                 throw new AppException(ErrorCode.CONFLICT, "이미 같은 닉네임으로 설정되어 있습니다.",dto);
-            }
-            userRepository.findByNickName(dto.getNickName()).ifPresent(user1 -> {
-                throw new AppException(ErrorCode.CONFLICT, "이미 같은 닉네임이 존재합니다",dto);
-            });
             user.setNickName(dto.getNickName());
         }
 
@@ -97,9 +91,6 @@ public class UserServiceImpl implements UserService {
             if(user.getEmail().equals(dto.getEmail())) {
                 throw new AppException(ErrorCode.CONFLICT, "이미 같은 Email로 설정되어 있습니다.",dto);
             }
-            userRepository.findByEmail(dto.getEmail()).ifPresent(user1 -> {
-                throw new AppException(ErrorCode.CONFLICT, "이미 같은 Email이 존재합니다",dto);
-            });
             user.setEmail(dto.getEmail());
         }
 
@@ -107,9 +98,6 @@ public class UserServiceImpl implements UserService {
             if(user.getPhoneNumber().equals(dto.getPhoneNumber())) {
                 throw new AppException(ErrorCode.CONFLICT, "이미 같은 번호로 설정되어있습니다.",dto);
             }
-            userRepository.findByPhoneNumber(dto.getPhoneNumber()).ifPresent(user1 -> {
-                throw new AppException(ErrorCode.CONFLICT, "이미 같은 전화번호가 존재합니다.",dto);
-            });
             user.setEmail(dto.getEmail());
         }
 
@@ -157,13 +145,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(String userName){
-        User user = userRepository.findByUsername(userName);
-        Terms terms = user.getTerms();
-        termsRepository.delete(terms);
-        em.flush();
-        em.clear();
+        User user = userRepository.findByUsernameWithTerms(userName);
+        termsRepository.delete(user.getTerms());
         userRepository.delete(user);
+    }
+
+    private void duplicateCheck(String userName, String email, String nickName, String phoneNumber) {
+        userRepository.findByUserNameOrEmailOrNickNameOrPhoneNumber(userName, email, nickName, phoneNumber)
+                .ifPresent(user -> {
+                    if (user.getUserName().equals(userName)) {
+                        throw new AppException(ErrorCode.CONFLICT, "USERNAME : " + userName + "는 이미 있습니다", null);
+                    } else if (user.getEmail().equals(email)) {
+                        throw new AppException(ErrorCode.CONFLICT, email + "은 이미 사용중인 이메일입니다.", null);
+                    } else if (user.getNickName().equals(nickName)) {
+                        throw new AppException(ErrorCode.CONFLICT, nickName + "은 이미 사용중인 닉네임입니다.", null);
+                    } else if (user.getPhoneNumber().equals(phoneNumber)) {
+                        throw new AppException(ErrorCode.CONFLICT, phoneNumber + "은 이미 사용중인 번호입니다.", null);
+                    }
+                });
     }
 
 }

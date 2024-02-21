@@ -8,9 +8,8 @@ import org.example.mySpringProj.dto.userDto.UserListResponse;
 import org.example.mySpringProj.dto.userDto.UserModifyRequest;
 import org.example.mySpringProj.exception.AppException;
 import org.example.mySpringProj.exception.ErrorCode;
-import org.example.mySpringProj.service.logoutService.LogoutService;
-import org.example.mySpringProj.service.MailService.MailService;
-import org.example.mySpringProj.service.passwordService.PasswordService;
+import org.example.mySpringProj.service.loginlogoutService.LoginLogoutService;
+import org.example.mySpringProj.service.findService.PasswordService;
 import org.example.mySpringProj.service.userService.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +24,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final LogoutService logoutService;
-    private final MailService mailService;
+    private final LoginLogoutService loginLogoutService;
     private final PasswordService passwordService;
 
     @PostMapping("/join")
-    public ResponseEntity<ResponseDTO> join(@Valid @RequestBody UserJoinRequest dto) {
+    public ResponseDTO join(@Valid @RequestBody UserJoinRequest dto) {
         if (!dto.isAgreedToTerms1() || !dto.isAgreedToTerms2())
             throw new AppException(ErrorCode.BAD_REQUEST, "이용 약관의 필수 항목을 체크해주세요.",dto);
 
@@ -43,25 +41,15 @@ public class UserController {
         userService.join(dto);
         //mailService.DeleteAuthNum(dto.getAuthNum());
 
-        return ResponseEntity.ok().body(ResponseDTO.builder()
-                .successStatus(HttpStatus.OK)
-                .successContent("님이 회원가입 되었습니다")
-                .Data(dto)
-                .build()
-        );
+        return ResponseDTO.success(HttpStatus.OK, dto.getUserName()+"님이 회원가입 되었습니다", dto);
     }
 
     @PatchMapping("/modify")
-    public ResponseEntity<ResponseDTO> modify(@Valid @RequestBody UserModifyRequest dto, Authentication authentication) {
+    public ResponseDTO modify(@Valid @RequestBody UserModifyRequest dto, Authentication authentication) {
         String userName = authentication.getName();
         passwordService.CheckPassword(userName,dto.getPassword());
         userService.modifyUser(userName,dto);
-        return ResponseEntity.ok().body(ResponseDTO.builder()
-                .successStatus(HttpStatus.OK)
-                .successContent("회원 정보가 정상적으로 변경되었습니다.")
-                .Data(dto)
-                .build()
-        );
+        return ResponseDTO.success(HttpStatus.OK, "회원 정보가 정상적으로 변경되었습니다.", dto);
     }
 
     @GetMapping("/list")
@@ -82,19 +70,16 @@ public class UserController {
     }
 
     @DeleteMapping("deleteUser/{userName}")
-    public ResponseEntity<ResponseDTO> deleteUser(@PathVariable("userName") String userName, Authentication authentication, HttpServletRequest request) {
+    public ResponseDTO deleteUser(@PathVariable("userName") String userName, Authentication authentication, HttpServletRequest request) {
         String reqUser = authentication.getName();
         Role targetRole = userService.getUser(reqUser).getRole();
 
         if (targetRole.equals(Role.ADMIN) || reqUser.equals(userName)) {
             userService.deleteUser(userName);
-            logoutService.logout(request);
+            loginLogoutService.logout(request);
 
-            return ResponseEntity.ok(ResponseDTO.builder()
-                    .successStatus(HttpStatus.OK)
-                    .successContent(userName + "님의 회원 탈퇴가 완료되었습니다.")
-                    .build()
-            );
+
+        return ResponseDTO.success(HttpStatus.OK,userName + "님의 회원 탈퇴가 완료되었습니다.",null);
         }
         else
             throw new AppException(ErrorCode.BAD_REQUEST, "해당 유저를 삭제할 권한이 없습니다.",null);
