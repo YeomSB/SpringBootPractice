@@ -12,7 +12,7 @@ import org.example.mySpringProj.exception.ErrorCode;
 import org.example.mySpringProj.repository.boardRepository.BoardRepository;
 import org.example.mySpringProj.repository.commentRepository.CommentRepository;
 import org.example.mySpringProj.repository.userRepository.UserRepository;
-import org.example.mySpringProj.service.PermissionFunc;
+import org.example.mySpringProj.service.UtilFunc;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +53,7 @@ public class CommentService {
     @Transactional
     public void deleteComment(Long board_id, Long comment_id,String reqName) {
 
-        PermissionFunc.hasPermission(commentRepository.findById(comment_id).orElseThrow().getUser().getUserName(),reqName);
+        UtilFunc.hasPermission(commentRepository.findById(comment_id).orElseThrow().getUser().getUserName(),reqName);
 
         Board board = checkBoard(board_id);
         Comment comment = checkComment(comment_id);

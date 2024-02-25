@@ -33,20 +33,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void join(UserJoinRequest dto){
-//        userRepository.findByUserName(dto.getUserName())
-//                .ifPresent(user -> {
-//                    throw new AppException(ErrorCode.BAD_REQUEST, "USERNAME : " + dto.getUserName() + "는 이미 있습니다",dto);
-//                });
-//        userRepository.findByEmail(dto.getEmail())
-//                .ifPresent(user -> {
-//                    throw new AppException(ErrorCode.BAD_REQUEST,dto.getEmail() + "은 이미 사용중인 이메일입니다.",dto);
-//                });
-//        userRepository.findByNickName(dto.getNickName())
-//                .ifPresent(user -> {
-//                    throw new AppException(ErrorCode.BAD_REQUEST, dto.getNickName() + "은 이미 사용중인 닉네임입니다.",dto);
-//                });
-
-
         duplicateCheck(dto.getUserName(),dto.getEmail(),dto.getNickName(),dto.getPhoneNumber());
 
         User savedUser = userRepository.save(User.builder()
@@ -137,7 +123,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserListResponse> getALL() {
+    public List<UserListResponse> getAll() {
         List<User> users = userRepository.findAll();
         return users.stream()
                 .map(User::toDto)
@@ -147,8 +133,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(String userName){
-        User user = userRepository.findByUsernameWithTerms(userName);
-        termsRepository.delete(user.getTerms());
+        User user = userRepository.findByUsername(userName);
+        termsRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
     }
 

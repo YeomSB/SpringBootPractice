@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @Builder
 public class CommentResponseDTO {
-    private String userNickName;
+    private String nickName;
     @NotBlank(message = "대댓글 내용을 입력해주세요.")
     private String contents;
     private Date regDate;
@@ -24,7 +24,7 @@ public class CommentResponseDTO {
         for(Comment comment : comments){
             commentResponseDTOList.add(
                     CommentResponseDTO.builder()
-                            .userNickName(comment.getUser().getNickName())
+                            .nickName(comment.getUser().getNickName())
                             .contents(comment.getContents())
                             .regDate(comment.getRegdate())
                             .build()

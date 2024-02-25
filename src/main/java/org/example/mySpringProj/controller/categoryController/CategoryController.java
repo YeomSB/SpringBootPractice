@@ -42,6 +42,4 @@ public class CategoryController {
         return ResponseDTO.success(HttpStatus.OK,"해당 게시판의 게시물 및 댓글이 모두 삭제되었습니다.",null);
     }
 
-
-
 }

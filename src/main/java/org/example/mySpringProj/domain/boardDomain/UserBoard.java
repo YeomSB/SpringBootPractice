@@ -9,18 +9,19 @@ import org.example.mySpringProj.domain.userDomain.User;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Likes {
-
+public class UserBoard {
     @Id
-    @GeneratedValue
-    @Column(name = "like_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_board_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "board_id")
     private Board board;
+
+
 }

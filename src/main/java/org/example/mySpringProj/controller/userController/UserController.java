@@ -59,7 +59,7 @@ public class UserController {
         UserListResponse user = userService.getUser(reqUser);
         if(target.equals("All")) {
             if (user.getRole().equals(Role.ADMIN))
-                return ResponseEntity.ok().body(userService.getALL());
+                return ResponseEntity.ok().body(userService.getAll());
             else
                 throw new AppException(ErrorCode.BAD_REQUEST, "해당 접근에 대한 권한이 없습니다.",null);
         }

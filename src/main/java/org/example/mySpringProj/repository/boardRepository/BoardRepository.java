@@ -13,9 +13,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findAllByCategory(Category category);
     void deleteAllByCategory(Category category);
 
-    @Query("select b from Board b join fetch b.likes")
-    Board findFetchLikesById(Long boardId);
-
     @Query("select b from Board b join fetch b.comments")
     Board findFetchCommentsById(Long boardId);
 }

@@ -1,6 +1,6 @@
 package org.example.mySpringProj.domain.userDomain;
 
-public enum Role{
+public enum Role {
         ADMIN("관리자"),
         OWNER("가게사장"),
         USER("일반사용자");

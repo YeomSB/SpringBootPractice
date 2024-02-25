@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.mySpringProj.domain.boardDomain.Board;
-import org.example.mySpringProj.domain.boardDomain.Likes;
 import org.example.mySpringProj.domain.userDomain.User;
 import org.example.mySpringProj.dto.boardDto.BoardRequestDTO;
 import org.example.mySpringProj.dto.boardDto.BoardResponseDTO;
@@ -12,15 +11,13 @@ import org.example.mySpringProj.dto.boardDto.BoardUpdateRequestDTO;
 import org.example.mySpringProj.exception.AppException;
 import org.example.mySpringProj.exception.ErrorCode;
 import org.example.mySpringProj.repository.boardRepository.BoardRepository;
-import org.example.mySpringProj.repository.boardRepository.LikeRepository;
 import org.example.mySpringProj.repository.categoryRepository.CategoryRepository;
 import org.example.mySpringProj.repository.commentRepository.CommentRepository;
 import org.example.mySpringProj.repository.userRepository.UserRepository;
-import org.example.mySpringProj.service.PermissionFunc;
+import org.example.mySpringProj.service.UtilFunc;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,7 +30,6 @@ public class BoardService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final CategoryRepository categoryRepository;
-    private final LikeRepository likeRepository;
 
     @Transactional
     public void save(BoardRequestDTO boardRequestDTO,String reqName) {
@@ -53,10 +49,10 @@ public class BoardService {
         User user = userRepository.findById(board.getUser().getId()).orElseThrow();
         return BoardResponseDTO.builder()
                 .categoryName(board.getCategory().getName())
-                .userNickname(user.getNickName())
+                .nickname(user.getNickName())
                 .title(board.getTitle())
                 .contents(board.getContents())
-                .likes(board.getLikes().size())
+                .likes(board.getLikeCount())
                 .viewCnt(board.getViewCount())
                 .build();
     }
@@ -65,7 +61,7 @@ public class BoardService {
     public void updateBoard(Long boardId, BoardUpdateRequestDTO boardUpdateRequestDTO, String userName) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 게시물을 찾을 수 없습니다.",boardId));
-        PermissionFunc.hasPermission(board.getUser().getUserName(),userName);
+        UtilFunc.hasPermission(board.getUser().getUserName(),userName);
         board.setContents(boardUpdateRequestDTO.getContents());
 
     }
@@ -73,14 +69,8 @@ public class BoardService {
     @Transactional
     public void deleteBoard(Long categoryId, Long boardId,String reqName) {
 
-        PermissionFunc.hasPermission(categoryRepository.findById(categoryId).orElseThrow().getUser().getUserName(),reqName);
-        PermissionFunc.hasPermission(boardRepository.findById(boardId).orElseThrow().getUser().getUserName(),reqName);
-
-        Board boardByLikes = boardRepository.findFetchLikesById(boardId);
-        if(boardByLikes != null) {
-            List<Likes> likes = boardByLikes.getLikes();
-            likeRepository.deleteAll(likes);
-        }
+        UtilFunc.hasPermission(categoryRepository.findById(categoryId).orElseThrow().getUser().getUserName(),reqName);
+        UtilFunc.hasPermission(boardRepository.findById(boardId).orElseThrow().getUser().getUserName(),reqName);
 
         Board boardByComments = boardRepository.findFetchCommentsById(boardId);
         if(boardByComments!=null)
@@ -94,15 +84,14 @@ public class BoardService {
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 유저를 찾을 수 없습니다.", userNickName));
 
         List<Board> boards = boardRepository.findAllByUser(user);
-        return getDtoList(boards);
+        return BoardResponseDTO.getDtoList(boards);
     }
 
     public List<BoardResponseDTO> getBoardsList(Long categoryId){
         List<Board> boards = boardRepository.findAllByCategory(categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"해당 게시판을 찾을 수 없습니다",categoryId))
         );
-        List<BoardResponseDTO> boardResponseDTOList = getDtoList(boards);
-        return boardResponseDTOList;
+        return BoardResponseDTO.getDtoList(boards);
     }
 
     private Board getBoard(BoardRequestDTO boardRequestDTO, User findUser) {
@@ -116,22 +105,6 @@ public class BoardService {
         return board;
     }
 
-    private List<BoardResponseDTO> getDtoList(List<Board> boards) {
-        List<BoardResponseDTO> boardResponseDTOS = new ArrayList<>();
-        for(Board board : boards) {
-            boardResponseDTOS.add(
-                    BoardResponseDTO.builder()
-                            .categoryName(board.getCategory().getName())
-                            .boardId(board.getId())
-                            .title(board.getTitle())
-                            .userNickname(board.getUser().getNickName())
-                            .contents(board.getContents())
-                            .likes(board.getLikes().size())
-                            .viewCnt(board.getViewCount())
-                            .build()
-            );
-        }
-        return boardResponseDTOS;
-    }
+
 
 }

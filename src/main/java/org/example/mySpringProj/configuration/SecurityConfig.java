@@ -1,6 +1,5 @@
 package org.example.mySpringProj.configuration;
 
-import org.example.mySpringProj.service.logoutService.LogoutService;
 import org.example.mySpringProj.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,11 +49,6 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(new JwtFilter(jwtTokenUtil), UsernamePasswordAuthenticationFilter.class)
 
-//                .logout((logout) -> logout
-//                        .logoutUrl("/logout")
-//                        .addLogoutHandler(logoutService)
-//                        .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext())))
-
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
@@ -73,12 +67,5 @@ public class SecurityConfig {
 //        return source;
 //    }
 
-
-//    @Bean
-//    CsrfConfigurer csrfConfigurer() {
-////        CsrfConfigurer csrfConfigurer = new CsrfConfigurer();
-////        csrfConfigurer.disable();
-////        return csrfConfigurer;
-//    }
 
 }

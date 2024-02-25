@@ -18,23 +18,19 @@ import java.util.List;
 public class Board {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "board_id")
     private Long id;
 
     private long userId;
     private String title;
     private String contents;
-
+    private int likeCount;
     private int viewCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "board")
-    private List<Likes> likes = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "board")
@@ -44,7 +40,14 @@ public class Board {
     @JoinColumn(name = "category_id")
     private Category category;
 
+
+    public void updateLikeCount() {
+        this.likeCount ++;
+    }
+    public void downLikeCount() {
+        this.likeCount--;
+    }
     public void updateViewCount() {
-        this.viewCount += 1;
+        this.viewCount ++;
     }
 }

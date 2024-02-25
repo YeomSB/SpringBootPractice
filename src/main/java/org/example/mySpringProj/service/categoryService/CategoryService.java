@@ -4,19 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.mySpringProj.domain.boardDomain.Board;
 import org.example.mySpringProj.domain.categoryDomain.Category;
-import org.example.mySpringProj.domain.boardDomain.Likes;
 import org.example.mySpringProj.domain.categoryDomain.Tag;
 import org.example.mySpringProj.domain.commentDomain.Comment;
 import org.example.mySpringProj.dto.categoryDto.CategoryDTO;
 import org.example.mySpringProj.exception.AppException;
 import org.example.mySpringProj.exception.ErrorCode;
 import org.example.mySpringProj.repository.boardRepository.BoardRepository;
-import org.example.mySpringProj.repository.boardRepository.LikeRepository;
 import org.example.mySpringProj.repository.categoryRepository.CategoryRepository;
 import org.example.mySpringProj.repository.categoryRepository.TagRepository;
 import org.example.mySpringProj.repository.commentRepository.CommentRepository;
 import org.example.mySpringProj.repository.userRepository.UserRepository;
-import org.example.mySpringProj.service.PermissionFunc;
+import org.example.mySpringProj.service.UtilFunc;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +28,6 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
-    private final LikeRepository likeRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
 
@@ -57,7 +54,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"카테고리를 찾을 수 없습니다.",categoryId));
 
-        PermissionFunc.hasPermission(category.getUser().getName(),reqName);
+        UtilFunc.hasPermission(category.getUser().getName(),reqName);
 
         category.setName(categoryDTO.getName());
     }
@@ -67,13 +64,10 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"카테고리를 찾을 수 없습니다.",categoryId));
 
-        PermissionFunc.hasPermission(category.getUser().getName(),reqName);
+        UtilFunc.hasPermission(category.getUser().getName(),reqName);
 
         List<Board> boards = category.getBoards();
         for (Board board : boards) {
-            List<Likes> likes = board.getLikes();
-            likeRepository.deleteAll(likes);
-
             List<Comment> comments = board.getComments();
             commentRepository.deleteAll(comments);
         }
@@ -83,7 +77,7 @@ public class CategoryService {
     }
 
     public CategoryDTO getCategory(Long categoryId) {
-         Category category = categoryRepository.findFetchById(categoryId);
+         Category category = categoryRepository.findById(categoryId).orElseThrow();
         return CategoryDTO.builder()
                 .name(category.getName())
                 .tags(Tag.convertTagNames(category.getTags()))
