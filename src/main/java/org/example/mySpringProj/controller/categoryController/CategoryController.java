@@ -18,7 +18,6 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-
     @PostMapping("/create")
     public ResponseDTO create(@RequestBody CategoryDTO categoryDTO){
         categoryService.save(categoryDTO);

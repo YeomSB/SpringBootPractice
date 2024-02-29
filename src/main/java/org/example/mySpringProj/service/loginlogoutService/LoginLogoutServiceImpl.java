@@ -39,10 +39,10 @@ public class LoginLogoutServiceImpl implements LoginLogoutService {
     public TokenDto login(String userName, String password) {
         //유저 없음
         User selectedUser = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, userName + "가 없습니다.",null));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, userName + "가 없습니다.",null));
         //비번 틀림
         if (!encoder.matches(password, selectedUser.getPassword())) {
-            throw new AppException(ErrorCode.BAD_REQUEST, "비밀번호가 틀렸습니다.",null);
+            throw new AppException(HttpStatus.BAD_REQUEST, "비밀번호가 틀렸습니다.",null);
         }
         //각 토큰 생성
         String accessToken = JwtTokenUtil.createToken
@@ -73,12 +73,8 @@ public class LoginLogoutServiceImpl implements LoginLogoutService {
     @Transactional
     public ResponseDTO logout(HttpServletRequest request) {
         String authorization = request.getHeader("Authorization");
-//        if (authorization == null)
-//            throw new AppException(ErrorCode.UNAUTHORIZED,"인증 정보가 유효하지 않습니다.",null);
         String token = authorization.split(" ")[1];
         String userName = jwtTokenUtil.getUserName(token);
-//        if (!jwtTokenUtil.validateToken(token))
-//            throw new AppException(ErrorCode.UNAUTHORIZED,"접근이 금지된 토큰입니다.",null);
         jwtRepository.deleteByUserName(userName);
 
         redisUtil.setBlackList(token, "access_token", jwtTokenUtil.getExpiration(token));

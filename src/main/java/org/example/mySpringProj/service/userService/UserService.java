@@ -10,7 +10,7 @@ import java.util.List;
 public interface UserService {
 
 
-    void join(UserJoinRequest dto);
+    String join(UserJoinRequest dto);
 
     void modifyUser(String userName, UserModifyRequest dto);
 

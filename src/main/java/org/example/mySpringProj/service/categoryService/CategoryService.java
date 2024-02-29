@@ -15,6 +15,7 @@ import org.example.mySpringProj.repository.categoryRepository.TagRepository;
 import org.example.mySpringProj.repository.commentRepository.CommentRepository;
 import org.example.mySpringProj.repository.userRepository.UserRepository;
 import org.example.mySpringProj.service.UtilFunc;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +53,7 @@ public class CategoryService {
     @Transactional
     public void modify(CategoryDTO categoryDTO, Long categoryId, String reqName) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"카테고리를 찾을 수 없습니다.",categoryId));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"카테고리를 찾을 수 없습니다.",categoryId));
 
         UtilFunc.hasPermission(category.getUser().getName(),reqName);
 
@@ -62,7 +63,7 @@ public class CategoryService {
     @Transactional
     public void delete(Long categoryId,String reqName) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"카테고리를 찾을 수 없습니다.",categoryId));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"카테고리를 찾을 수 없습니다.",categoryId));
 
         UtilFunc.hasPermission(category.getUser().getName(),reqName);
 

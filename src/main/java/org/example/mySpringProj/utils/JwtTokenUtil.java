@@ -49,7 +49,6 @@ public class JwtTokenUtil {
         return claims.get("userName", String.class);
     }
 
-
     public static String getTokenType(String token, String key) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(key.getBytes()))
@@ -58,7 +57,6 @@ public class JwtTokenUtil {
                 .getBody();
         return claims.get("tokenType", String.class);
     }
-
 
     public boolean isExpired(String token) {
         Claims claims = Jwts.parserBuilder()
@@ -69,14 +67,12 @@ public class JwtTokenUtil {
         return claims.getExpiration().before(new Date());
     }
 
-
     public Authentication getAthentication(String token) {
         String userName = getUserName(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         return authenticationToken;
     }
-
 
     public Long getExpiration(String accessToken) {
         Date expiration = Jwts.parserBuilder()

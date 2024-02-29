@@ -21,14 +21,14 @@ public class ExceptionManager {
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ErrorDTO> handleAppException(AppException ex) {
-        String status = ex.getErrorCode().getMessage();
+        //String status = ex.getErrorCode().getMessage();
         ErrorDTO errorDTO = ErrorDTO.builder()
-                .errorStatus(status)
+                .errorStatus(ex.getErrorCode())
                 .errorContent(ex.getMessage())
                 .data(ex.getData())
                 .build();
 
-        return new ResponseEntity<>(errorDTO, ex.getErrorCode().getHttpStatus());
+        return new ResponseEntity<>(errorDTO, ex.getErrorCode());
     }
 
     @ExceptionHandler(RuntimeException.class)

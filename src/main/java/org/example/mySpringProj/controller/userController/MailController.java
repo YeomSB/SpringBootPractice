@@ -35,7 +35,7 @@ public class MailController {
             return ResponseDTO.success(HttpStatus.OK,"인증이 완료되었습니다",dto);
         }
         else{
-            throw new AppException(ErrorCode.BAD_REQUEST,"인증 번호가 맞지 않습니다.",dto);
+            throw new AppException(HttpStatus.BAD_REQUEST,"인증 번호가 맞지 않습니다.",dto);
         }
     }
 

@@ -30,7 +30,7 @@ public class UserController {
     @PostMapping("/join")
     public ResponseDTO join(@Valid @RequestBody UserJoinRequest dto) {
         if (!dto.isAgreedToTerms1() || !dto.isAgreedToTerms2())
-            throw new AppException(ErrorCode.BAD_REQUEST, "이용 약관의 필수 항목을 체크해주세요.",dto);
+            throw new AppException(HttpStatus.BAD_REQUEST, "이용 약관의 필수 항목을 체크해주세요.",dto);
 
 
         //boolean isAuthVerified = mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum());
@@ -61,7 +61,7 @@ public class UserController {
             if (user.getRole().equals(Role.ADMIN))
                 return ResponseEntity.ok().body(userService.getAll());
             else
-                throw new AppException(ErrorCode.BAD_REQUEST, "해당 접근에 대한 권한이 없습니다.",null);
+                throw new AppException(HttpStatus.BAD_REQUEST, "해당 접근에 대한 권한이 없습니다.",null);
         }
         else{
             UserListResponse respUser = userService.getUser(target);
@@ -82,7 +82,7 @@ public class UserController {
         return ResponseDTO.success(HttpStatus.OK,userName + "님의 회원 탈퇴가 완료되었습니다.",null);
         }
         else
-            throw new AppException(ErrorCode.BAD_REQUEST, "해당 유저를 삭제할 권한이 없습니다.",null);
+            throw new AppException(HttpStatus.BAD_REQUEST, "해당 유저를 삭제할 권한이 없습니다.",null);
     }
 
 

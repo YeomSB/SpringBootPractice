@@ -13,6 +13,7 @@ import org.example.mySpringProj.repository.boardRepository.BoardRepository;
 import org.example.mySpringProj.repository.commentRepository.CommentRepository;
 import org.example.mySpringProj.repository.userRepository.UserRepository;
 import org.example.mySpringProj.service.UtilFunc;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,7 @@ public class CommentService {
                 .board(checkBoard(commentRequestDTO.getBoardId()))
                 .contents(commentRequestDTO.getContents())
                 .user(userRepository.findByUserName(userName)
-                        .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"",null)))
+                        .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"",null)))
                 .parentId(commentRequestDTO.getParentId())
                 .build());
     }
@@ -46,7 +47,7 @@ public class CommentService {
 
     public List<CommentResponseDTO> selectUser(Long user_id) {
         User user = userRepository.findById(user_id)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 유저가 없습니다.",user_id));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "해당 유저가 없습니다.",user_id));
         return CommentResponseDTO.addDtoList(commentRepository.getAllByUser(user));
     }
 
@@ -65,7 +66,7 @@ public class CommentService {
         }
         else {
         commentRepository.delete(commentRepository.findByIdAndBoard(comment_id,board)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND,"해당 댓글을 찾을 수 없습니다",comment_id)));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"해당 댓글을 찾을 수 없습니다",comment_id)));
         }
     }
 
@@ -76,12 +77,12 @@ public class CommentService {
 
     private Board checkBoard(Long board_id){
         return boardRepository.findById(board_id)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 게시물이 없습니다.",board_id));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "해당 게시물이 없습니다.",board_id));
     }
 
     private Comment checkComment(Long comment_id){
         return commentRepository.findById(comment_id)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "해당 댓글이 없습니다.",comment_id));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "해당 댓글이 없습니다.",comment_id));
     }
 
 
